@@ -1,4 +1,6 @@
 export async function promptAI(prompt) {
+    // TODO : Uncomment this section for the AI to work
+
     // const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     //   method: "POST",
     //   headers: {
