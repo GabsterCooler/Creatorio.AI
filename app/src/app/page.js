@@ -5,6 +5,7 @@ import { useState } from "react";
 export default function Home() {
   const [usage, setUsage] = useState("");
   const [build, setBuild] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleGenerate = async () => {
     const res = await fetch("/api/generate", {
@@ -13,7 +14,14 @@ export default function Home() {
       body: JSON.stringify({ usage }),
     });
     const data = await res.json();
-    setBuild(data.build);
+
+    if (data?.error) {
+      setError(data.error);
+      setBuild(null);
+    } else {
+      setError(null);
+      setBuild(data.build);
+    }
   };
 
   return (
@@ -34,6 +42,12 @@ export default function Home() {
       >
         Generate Build
       </button>
+
+      {error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded">
+          {error}
+        </div>
+      )}
 
       {build && (
         <div className="bg-gray-100 p-4 rounded">
