@@ -49,7 +49,7 @@ export function filterDataInJSON(data) {
     };
 
     const readAndFilterCSV = (filename, budget) => {
-        const filePath = path.join(process.cwd(), "data", filename);
+        const filePath = path.join(process.cwd(), "src/data", filename);
         const file = fs.readFileSync(filePath, "utf8");
 
         const results = Papa.parse(file, {
@@ -62,12 +62,12 @@ export function filterDataInJSON(data) {
             .map((item) => `${item.name} ${Number(item.price)}$`);
     };
 
-    const CPUs = readAndFilterCSV("../src/data/cpu.csv", prices.CPU);
-    const GPUs = readAndFilterCSV("../src/data/video-card.csv", prices.GPU);
-    const RAMs = readAndFilterCSV("../src/data/memory.csv", prices.RAM);
-    const storages = readAndFilterCSV("../src/data/internal-hard-drive.csv", prices.storage);
-    const motherboards = readAndFilterCSV("../src/data/motherboard.csv", prices.motherboard);
-    const PSUs = readAndFilterCSV("../src/data/power-supply.csv", prices.PSU);
+    const CPUs = readAndFilterCSV("cpu.csv", prices.CPU);
+    const GPUs = readAndFilterCSV("video-card.csv", prices.GPU);
+    const RAMs = readAndFilterCSV("memory.csv", prices.RAM);
+    const storages = readAndFilterCSV("internal-hard-drive.csv", prices.storage);
+    const motherboards = readAndFilterCSV("motherboard.csv", prices.motherboard);
+    const PSUs = readAndFilterCSV("power-supply.csv", prices.PSU);
 
     return {
         CPUsList: CPUs,
