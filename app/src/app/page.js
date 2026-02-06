@@ -5,7 +5,6 @@ import { useState } from "react";
 export default function Home() {
   const [form, setForm] = useState({
     usage: "",
-    minBudget: "",
     maxBudget: "",
     resolution: "",
     performance: "",
@@ -13,38 +12,54 @@ export default function Home() {
 
   const [build, setBuild] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setForm((prev) => ({
-      ...prev,
-      [name]:
-        name === "minBudget" || name === "maxBudget"
-          ? value === ""
-            ? ""
-            : Math.max(0, Number(value))
-          : value,
-    }));
+    setForm((prev) => {
+      const newValue =
+        name === "maxBudget" ? (value === "" ? "" : Math.max(0, Number(value))) : value;
+
+      return {
+        ...prev,
+        [name]: newValue,
+      };
+    });
   };
 
-
-
   const handleGenerate = async () => {
-    const res = await fetch("/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-
-    const data = await res.json();
-
-    if (data?.error) {
-      setError(data.error);
+    // Check if any field is empty
+    const emptyFields = Object.entries(form).filter(([_, value]) => !value);
+    if (emptyFields.length > 0) {
+      setError("Please fill out all fields before generating a build.");
       setBuild(null);
-    } else {
-      setError(null);
-      setBuild(data.build);
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (data?.error) {
+        setError(data.error);
+        setBuild(null);
+      } else {
+        setBuild(data.build);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      setBuild(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,26 +83,15 @@ export default function Home() {
         <option value="general">General Use</option>
       </select>
 
-      <label className="block mb-2 font-semibold">Budget ($)</label>
-      <div className="flex gap-2 mb-4">
-        <input
-          name="minBudget"
-          placeholder="Min"
-          type="number"
-          value={form.minBudget}
-          min="0"
-          onChange={handleChange}
-          className="border p-2 w-1/2 rounded"
-        />
-        <input
-          name="maxBudget"
-          placeholder="Max"
-          type="number"
-          value={form.maxBudget}
-          onChange={handleChange}
-          className="border p-2 w-1/2 rounded"
-        />
-      </div>
+      <label className="block mb-2 font-semibold">Maximum Budget ($)</label>
+      <input
+        name="maxBudget"
+        placeholder="Max"
+        type="number"
+        value={form.maxBudget}
+        onChange={handleChange}
+        className="border p-2 mb-4 w-full rounded"
+      />
 
       <label className="block mb-2 font-semibold">Target Resolution</label>
       <select
@@ -117,13 +121,42 @@ export default function Home() {
 
       <button
         onClick={handleGenerate}
-        className="bg-blue-500 text-white px-4 py-2 rounded mb-4 w-full"
+        className={`bg-blue-500 text-white px-4 py-2 rounded mb-4 w-full ${
+          loading ? "opacity-70 cursor-not-allowed" : ""
+        }`}
+        disabled={loading}
       >
-        Generate Build
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg
+              className="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              ></path>
+            </svg>
+            Generating...
+          </span>
+        ) : (
+          "Generate Build"
+        )}
       </button>
 
       {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded">
+        <div className="bg-red-100 text-red-700 p-4 rounded mb-4">
           {error}
         </div>
       )}

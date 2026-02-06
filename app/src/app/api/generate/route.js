@@ -1,25 +1,33 @@
 import { promptAI } from "@/app/lib/ai";
+import { filterDataInJSON } from "@/app/lib/excel";
 
 export async function POST(req) {
-    const { usage } = await req.json();
+    const data = await req.json();
+
+    const JSONfilteredData = filterDataInJSON(data);
+
+    console.log(JSON.stringify(JSONfilteredData, null, 2))
 
     const prompt = `
-User wants a PC for: ${usage}.
-Generate a JSON object with recommended PC components only, format:
+        The user wants a pc with:
+        ${JSON.stringify(JSONfilteredData, null, 2)}
 
-{
-  "CPU": "",
-  "GPU": "",
-  "RAM": "",
-  "Storage": "",
-  "Motherboard": "",
-  "PSU": "",
-  "Cooling": "",
-  "Case": ""
-}
+        Generate a JSON object with recommended PC components only, format:
 
-Do not include any extra text.
-`;
+        {
+            "CPU": "",
+            "GPU": "",
+            "RAM": "",
+            "Storage": "",
+            "Motherboard": "",
+            "PSU": ""
+        }
+
+        If you can't fill the format because of budget issues, say:
+        Not enough budget for the recommendation.
+
+        Do not include any extra text.
+        `;
 
     const build = await promptAI(prompt);
 
