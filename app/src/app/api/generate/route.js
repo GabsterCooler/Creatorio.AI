@@ -10,7 +10,7 @@ export async function POST(req) {
 A user wants a PC with the following requirements:
 
 - Usage: ${data.usage}
-- Approximate Budget: $${data.overallBudget}
+- Budget: $${data.budget}
 - Target Resolution: ${data.resolution}
 - Performance Preference: ${data.performance}
 
@@ -53,14 +53,14 @@ Not enough budget for the recommendation.
 
     const build = await promptAI(prompt);
 
-    const filteredBuild = filterDataInJSON(build);
-
     if (build?.error) {
         return new Response(
             JSON.stringify({ error: build.error }),
             { status: 500, headers: { "Content-Type": "application/json" } }
         );
     }
+
+    const filteredBuild = filterDataInJSON(build);
 
     return new Response(
         JSON.stringify({ build: filteredBuild }),
