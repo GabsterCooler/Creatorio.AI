@@ -22,13 +22,13 @@ export async function promptAI(prompt) {
 
     const data = await response.json();
 
-    let build = data.choices?.[0]?.message.content || "Error generating build";
+    let buildMessage = data.choices?.[0]?.message.content;
 
     try {
-        build = cleanAIResponse(build);
-        return JSON.parse(build);
+        buildMessage = cleanAIResponse(buildMessage);
+        return JSON.parse(buildMessage);
     } catch (err) {
         console.error("Failed to parse AI response as JSON:", err);
-        return { error: build };
+        return { error: buildMessage };
     }
 }
