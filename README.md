@@ -25,7 +25,7 @@ Before following these steps, make sure you have Node.js and a package manager i
 ### 1️⃣ Navigate to the projer
 
 ```bash
-cd app
+cd ./app
 ```
 ### 2️⃣ Install dependencies
 ```bash
