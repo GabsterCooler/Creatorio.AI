@@ -1,6 +1,6 @@
-# 🚀 PC Builder AI
+# 🚀 Creatorio.AI
 
-PC Builder AI is a **Next.js web application** that generates complete PC builds based on user preferences.  
+Creatorio.AI is a **Next.js web application** that offers different creative AI applications. Right now, only PC Builder AI is available. 
 It first uses AI to give the best build using the restrictions. Then, it uses a dataset from **PCPartPicker** to verify if the pieces recommended by the AI exists.
 
 Dataset source: [PC Part Dataset](https://github.com/docyx/pc-part-dataset/tree/main)

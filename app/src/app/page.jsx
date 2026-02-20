@@ -8,6 +8,7 @@ import CustomSelect from "./components/CustomSelect";
 import ComponentCard from "./components/ComponentCard";
 import Toast from "./components/Toast";
 import Field from "./components/Field";
+import Carousel from "./components/Carousel";
 
 export default function Home() {
   const [form, setForm] = useState({
@@ -20,6 +21,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = ({ target: { name, value } }) => {
     setForm((prev) => ({
@@ -35,6 +37,7 @@ export default function Home() {
     }
     setError(null);
     setLoading(true);
+    setSubmitted(true);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -50,12 +53,11 @@ export default function Home() {
       setLoading(false);
     }
   };
-
   const totalPrice = build
     ? Object.values(build).reduce((sum, item) => {
-        const price = Number(item?.price);
-        return isNaN(price) ? sum : sum + price;
-      }, 0)
+      const price = Number(item?.price);
+      return isNaN(price) ? sum : sum + price;
+    }, 0)
     : 0;
 
   const handleCopy = () => {
@@ -63,8 +65,7 @@ export default function Home() {
     const formatted = Object.entries(build)
       .map(
         ([key, item]) =>
-          `${key}: ${item?.name || "Not Found"} (${
-            item?.price === "Unknown" ? "Price Unknown" : `$${item.price}`
+          `${key}: ${item?.name || "Not Found"} (${item?.price === "Unknown" ? "Price Unknown" : `$${item.price}`
           })`
       )
       .join("\n");
@@ -149,7 +150,20 @@ export default function Home() {
             {error && <div className="mt-6 text-sm text-red-400">{error}</div>}
           </div>
 
-          <div className="lg:col-span-2 flex flex-col items-center w-full">
+          <div
+            className={`lg:col-span-2 flex w-full items-center ${submitted ? "flex-col" : ""
+              }`}
+          >
+            {!submitted && (
+              <Carousel
+                slides={[
+                  { title: "Gaming PCs", description: "High-performance setups for gaming." },
+                  { title: "Workstations", description: "Optimized for video editing and 3D rendering." },
+                  { title: "Budget Builds", description: "Affordable options for everyday tasks." },
+                ]}
+              />
+            )}
+
             {loading ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
