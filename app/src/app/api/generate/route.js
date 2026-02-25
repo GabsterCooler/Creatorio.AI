@@ -1,6 +1,10 @@
 import { promptAI } from "@/app/lib/ai";
-import { getTopMatchesForBuild } from "@/app/lib/excel";
+import { getTopMatchesForBuild } from "@/app/lib/topKAlgorithm";
 
+/**
+ * Basic server‑side validation for the configuration form.
+ * Ensures we only hit the AI API with well‑formed, allowed values.
+ */
 function validateForm(data) {
   const allowedUsage = ["gaming", "work", "video_editing", "3d", "streaming", "general"];
   const allowedResolution = ["1080p", "1440p", "4k"];
@@ -24,12 +28,19 @@ function validateForm(data) {
   );
 }
 
+/**
+ * Some models like to wrap JSON in ``` or ```json fences.
+ * This strips those wrappers so `JSON.parse` has a clean string.
+ */
 function cleanAIResponse(message) {
   if (typeof message !== "string") return "";
   const withoutFences = message.replace(/```json|```/gi, "").trim();
   return withoutFences.replace(/^\s+|\s+$/g, "");
 }
 
+/**
+ * Small helper to build consistent JSON error responses.
+ */
 function makeErrorResponse(message, status) {
   return new Response(
     JSON.stringify({ error: message }),
@@ -37,6 +48,13 @@ function makeErrorResponse(message, status) {
   );
 }
 
+/**
+ * First‑stage prompt: ask the model for a *free‑form* build using
+ * real‑world parts, but only as plain JSON strings (one per component).
+ *
+ * This stage is allowed to choose from the whole market and is later
+ * snapped to our CSV catalog in a second constrained pass.
+ */
 function buildInitialPrompt(data) {
   return `
 You are a PC hardware expert.
@@ -93,6 +111,13 @@ Not enough budget for the recommendation.
 `;
 }
 
+/**
+ * Second‑stage prompt: constrain the model to pick exactly one option
+ * per component from our pre‑computed top matches list.
+ *
+ * The model sees a numbered list like "1. name: X, price: Y" for each
+ * category and must copy the *name* field exactly into the final JSON.
+ */
 function buildConstrainedPrompt(data, topMatches) {
   return `
 You are a PC hardware expert.
@@ -149,10 +174,22 @@ Format EXACTLY like this:
 `;
 }
 
+/**
+ * Given a selected name from the constrained AI output, find the
+ * corresponding entry in our `topMatches` list.
+ */
 function pickFromOptions(selectedName, options) {
   return options.find(opt => opt.name === selectedName);
 }
 
+/**
+ * Main API entrypoint:
+ * 1. Validate form input.
+ * 2. Call the AI once to get a free‑form build.
+ * 3. Map that build to top matching real parts from our CSVs.
+ * 4. Call the AI again, constrained to those options only.
+ * 5. Resolve the final chosen parts back to full objects and return.
+ */
 export async function POST(req) {
   const data = await req.json();
 
