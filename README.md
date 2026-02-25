@@ -7,6 +7,8 @@ Dataset source: [PC Part Dataset](https://github.com/docyx/pc-part-dataset/tree/
 
 You will need an OpenRouter API Key to communicate.
 
+*Know that this is a weekend project and flaws are to be expected.
+
 ---
 
 ## 🌟 Features
