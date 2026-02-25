@@ -54,10 +54,19 @@ IMPORTANT RULES:
 
 - Stay within the total budget.
 - Ensure all parts are compatible.
+- For the GPU, give the vendor model name.
+- For the RAM, include the DDR generation (DDR4 or DDR5), the speed in MHz in the name and the vendor model name.
 - Prioritize component balance (no extreme bottlenecks).
 - Do NOT recommend integrated graphics for video editing.
 - Do NOT invent product names.
 - The currency is in USD.
+
+NAMING / FORMATTING RULES (CRITICAL FOR PARSING):
+
+- Always put a space between numbers and units: "32 GB", "5600 MHz", "16 GB".
+- For RAM, write the generation and speed as: "DDR4 3200" or "DDR5 5600" (no hyphen, not "DDR5-5600").
+- For GPUs, write VRAM as "... 16 GB" (with a space before "GB", not "16GB").
+- Avoid slashes or extra punctuation inside the main model string where possible.
 
 OUTPUT RULES (CRITICAL):
 

@@ -9,22 +9,22 @@ function normalize(stringValue) {
 function extractTokens(stringValue) {
   return normalize(stringValue)
     .split(" ")
-    .filter(Boolean)
-    .filter(
-      w =>
-        ![
-          "xt",
-          "ti",
-          "super",
-          "w",
-          "plus",
-          "gold",
-          "bronze",
-          "platinum",
-          "pcie5",
-          "mhz"
-        ].includes(w)
-    );
+    .filter(Boolean);
+}
+
+function joinParts(parts) {
+  return parts.filter(Boolean).join(" ");
+}
+
+function parseRamSpeed(speed) {
+  if (!speed) return { ddr: null, mhz: null };
+  const [gen, freq] = String(speed).split(",");
+  const trimmedGen = (gen ?? "").trim();
+  const trimmedFreq = (freq ?? "").trim();
+
+  const ddr = trimmedGen === "4" ? "DDR4" : trimmedGen === "5" ? "DDR5" : null;
+  const mhz = trimmedFreq ? `${trimmedFreq} MHz` : null;
+  return { ddr, mhz };
 }
 
 function findTopMatches(input, dataset, key, limit) {
@@ -41,21 +41,7 @@ function findTopMatches(input, dataset, key, limit) {
   
     const nameTokens = extractTokens(item[key]);
   
-    const extraTokensForRAM = [];
-    if (item.speed) {
-      const [gen, freq] = String(item.speed).split(",");
-
-      const trimmed = gen.trim();
-  
-      if (trimmed === "4") extraTokensForRAM.push("ddr4");
-      else if (trimmed === "5") extraTokensForRAM.push("ddr5");
-  
-      if (freq) extraTokensForRAM.push(freq.trim());
-    }
-  
-    const currentItemTokens = [...new Set([...nameTokens, ...extraTokensForRAM])];
-  
-    const score = calculateTokenScoreOnMatches(inputTokens, currentItemTokens);
+    const score = calculateTokenScoreOnMatches(inputTokens, nameTokens);
     scored.push({ item, score });
   }
 
@@ -77,17 +63,35 @@ function readCSV(filename) {
 
 export function getTopMatchesForBuild(build, limit) {
   const cpuData = readCSV("cpu.csv");
-  const gpuData = readCSV("video-card.csv");
-  const ramData = readCSV("memory.csv");
-  const storageData = readCSV("internal-hard-drive.csv");
+  const gpuData = readCSV("video-card.csv").map(item => ({
+    ...item,
+    combinedName: joinParts([
+      item.name,
+      item.chipset ? `(${item.chipset})` : null,
+      item.memory ? `${item.memory} GB` : null
+    ])
+  }));
+
+  const ramData = readCSV("memory.csv").map(item => {
+    const { ddr, mhz } = parseRamSpeed(item.speed);
+    return {
+      ...item,
+      combinedName: joinParts([item.name, ddr, mhz])
+    };
+  });
+
+  const storageData = readCSV("internal-hard-drive.csv").map(item => ({
+    ...item,
+    combinedName: joinParts([item.name, item.capacity ? `${item.capacity} GB` : null])
+  }));
   const motherboardData = readCSV("motherboard.csv");
   const psuData = readCSV("power-supply.csv");
 
   return {
     CPU: findTopMatches(build.CPU, cpuData, "name", limit),
-    GPU: findTopMatches(build.GPU, gpuData, "chipset", limit),
-    RAM: findTopMatches(build.RAM, ramData, "name", limit),
-    Storage: findTopMatches(build.Storage, storageData, "name", limit),
+    GPU: findTopMatches(build.GPU, gpuData, "combinedName", limit),
+    RAM: findTopMatches(build.RAM, ramData, "combinedName", limit),
+    Storage: findTopMatches(build.Storage, storageData, "combinedName", limit),
     Motherboard: findTopMatches(build.Motherboard, motherboardData, "name", limit),
     PSU: findTopMatches(build.PSU, psuData, "name", limit)
   };
