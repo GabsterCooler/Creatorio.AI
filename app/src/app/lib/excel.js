@@ -37,7 +37,14 @@ function findTopMatches(input, dataset, key, limit) {
   }
 
   for (const item of dataset) {
-    if (!item || typeof item[key] !== "string") continue;
+    if (
+      !item ||
+      typeof item[key] !== "string" ||
+      !item.price ||
+      String(item.price).trim() === ""
+    ) {
+      continue;
+    }
   
     const nameTokens = extractTokens(item[key]);
   
