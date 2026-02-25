@@ -83,8 +83,7 @@ export default function Home() {
     const formatted = Object.entries(build)
       .map(
         ([key, item]) =>
-          `${key}: ${item?.name || "Not Found"} (${item?.price === "Unknown" ? "Price Unknown" : `$${item.price}`
-          })`
+          `${key}: ${item?.name || "Not Found"} ($${item.price})`
       )
       .join("\n");
     navigator.clipboard.writeText(formatted);

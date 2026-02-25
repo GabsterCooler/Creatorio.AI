@@ -56,7 +56,7 @@ function findTopMatches(input, dataset, key, limit) {
 
   return candidates.slice(0, limit).map(({ item }) => ({
     name: item[key],
-    price: item.price ? Number(item.price) : "Unknown"
+    price: Number(item.price)
   }));
 }
 

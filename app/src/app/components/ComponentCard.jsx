@@ -29,7 +29,7 @@ export default function ComponentCard({ component, value }) {
       </div>
       {value?.price !== undefined && (
         <div className="text-[#C6A75E] text-lg font-medium">
-          {value.price === "Unknown" ? "Price Unknown" : `$${value.price}`}
+          ${value.price}
         </div>
       )}
     </motion.div>

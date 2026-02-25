@@ -180,8 +180,6 @@ export async function POST(req) {
     return makeErrorResponse("Something went wrong with the AI. Please try again and make sure your API key is correct.",500);
   }
 
-  console.log(initialBuildResponseJSON)
-
   const topMatches = getTopMatchesForBuild(initialBuildResponseJSON, 5);
 
   const constrainedPrompt = buildConstrainedPrompt(data, topMatches);
