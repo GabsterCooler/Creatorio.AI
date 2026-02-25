@@ -1,9 +1,11 @@
 # 🚀 Creatorio.AI
 
 Creatorio.AI is a **Next.js web application** that offers different creative AI applications. Right now, only PC Builder AI is available. 
-It first uses AI to give the best build using the restrictions. Then, it uses a dataset from **PCPartPicker** to verify if the pieces recommended by the AI exists.
+First, the algorithm asks an AI to give the best PC build for the restrictions applied. Then, by checking in the dataset (Our inventory), we try to find the best similar components available. Finally, we ask again the AI to give us the best build with the best components.
 
 Dataset source: [PC Part Dataset](https://github.com/docyx/pc-part-dataset/tree/main)
+
+You will need an OpenRouter API Key to communicate.
 
 ---
 
@@ -38,11 +40,7 @@ pnpm install
 bun install
 ```
 
-### 3️⃣ Set up environment variables
-
-You have to create a .env file inside the ./app folder and create OPENROUTER_KEY=your_api_key_here. So, you have to create an account at [OpenRouter](https://openrouter.ai/) and create an API key.
-
-### 4️⃣ Start the development server
+### 3️⃣ Start the development server
 
 ```bash
 npm run dev

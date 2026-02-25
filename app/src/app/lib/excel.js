@@ -38,10 +38,24 @@ function findTopMatches(input, dataset, key, limit) {
 
   for (const item of dataset) {
     if (!item || typeof item[key] !== "string") continue;
+  
+    const nameTokens = extractTokens(item[key]);
+  
+    const extraTokensForRAM = [];
+    if (item.speed) {
+      const [gen, freq] = String(item.speed).split(",");
 
-    const currentItemTokens = extractTokens(item[key]);
+      const trimmed = gen.trim();
+  
+      if (trimmed === "4") extraTokensForRAM.push("ddr4");
+      else if (trimmed === "5") extraTokensForRAM.push("ddr5");
+  
+      if (freq) extraTokensForRAM.push(freq.trim());
+    }
+  
+    const currentItemTokens = [...new Set([...nameTokens, ...extraTokensForRAM])];
+  
     const score = calculateTokenScoreOnMatches(inputTokens, currentItemTokens);
-
     scored.push({ item, score });
   }
 

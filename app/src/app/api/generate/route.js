@@ -58,7 +58,6 @@ IMPORTANT RULES:
 - Do NOT recommend integrated graphics for video editing.
 - Do NOT invent product names.
 - The currency is in USD.
-- Do NOT include wattage, efficiency, certifications, commas, parentheses, or extra specs.
 
 OUTPUT RULES (CRITICAL):
 
