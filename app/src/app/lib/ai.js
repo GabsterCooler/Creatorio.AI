@@ -1,34 +1,23 @@
-function cleanAIResponse(message) {
-    message = message.replace(/```json|```/gi, "").trim();
+export async function promptAI(prompt, apiKey) {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "openrouter/auto",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 300,
+    }),
+  });
 
-    message = message.replace(/^\s+|\s+$/g, "");
+  const data = await response.json();
 
-    return message;
-}
+  if (!response.ok || data.error?.message) {
+    console.error("Failed to get response from AI:", data.error?.message);
+    return { error: "Something went wrong with the AI. Please try again and make sure your API key is correct." };
+  }
 
-export async function promptAI(prompt) {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "openrouter/auto",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 300,
-      }),
-    });
-
-    const data = await response.json();
-
-    let buildMessage = data.choices?.[0]?.message.content;
-
-    try {
-        buildMessage = cleanAIResponse(buildMessage);
-        return JSON.parse(buildMessage);
-    } catch (err) {
-        console.error("Failed to parse AI response as JSON:", err);
-        return { error: buildMessage };
-    }
+  return data.choices?.[0]?.message?.content;
 }

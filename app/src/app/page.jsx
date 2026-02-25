@@ -16,12 +16,12 @@ export default function Home() {
     budget: "",
     resolution: "",
     performance: "",
+    envKey: "",
   });
   const [build, setBuild] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = ({ target: { name, value } }) => {
     setForm((prev) => ({
@@ -36,19 +36,37 @@ export default function Home() {
       return;
     }
     setError(null);
+    setBuild(null);
     setLoading(true);
-    setSubmitted(true);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
-      if (data?.error) setError(data.error);
-      else setBuild(data.build || data);
-    } catch {
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        // ignore JSON parse error; will fall back to generic message
+      }
+
+      if (!res.ok) {
+        setError(data?.error || "Unexpected error occurred.");
+        setBuild(null);
+        return;
+      }
+
+      if (data?.error) {
+        setError(data.error);
+        setBuild(null);
+      } else {
+        setBuild(data.build || data);
+      }
+    } catch (e) {
       setError("Unexpected error occurred.");
+      setBuild(null);
     } finally {
       setLoading(false);
     }
@@ -137,6 +155,16 @@ export default function Home() {
               ]}
             />
 
+            <Field label="OpenRouter API Key">
+              <input
+                name="envKey"
+                type="password"
+                value={form.envKey}
+                onChange={handleChange}
+                className="bg-[#121216] border border-white/10 text-white p-3 rounded-xl w-full focus:border-[#C6A75E] transition"
+              />
+            </Field>
+
             <button
               onClick={handleGenerate}
               disabled={loading}
@@ -151,10 +179,9 @@ export default function Home() {
           </div>
 
           <div
-            className={`lg:col-span-2 flex w-full items-center ${submitted ? "flex-col" : ""
-              }`}
+            className={`lg:col-span-2 flex w-full items-center ${build || loading ? "flex-col" : ""}`}
           >
-            {!submitted && (
+            {!build && !loading && (
               <Carousel
                 slides={[
                   { title: "Gaming PCs", description: "High-performance setups for gaming." },

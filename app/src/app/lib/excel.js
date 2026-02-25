@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
-import Fuse from "fuse.js";
 
 function normalize(stringValue) {
   return stringValue.toLowerCase().trim().replace(/[^a-z0-9 ]/g, "");
@@ -28,49 +27,30 @@ function extractTokens(stringValue) {
     );
 }
 
-function calculateTokenScoreOnMatches(inputTokens, itemTokens) {
-  return inputTokens.filter(t => itemTokens.includes(t)).length;
-}
-
-function lastResortMatch(input, dataset, key) {
-  const fuse = new Fuse(dataset, {
-    keys: [key],
-    threshold: 0.4,
-    ignoreLocation: true,
-    tokenize: true
-  });
-
-  const fuseResult = fuse.search(input);
-  return fuseResult[0]?.item || null;
-}
-
-function findBestMatch(input, dataset, key = "name") {
-  if (!input) return null;
-
+function findTopMatches(input, dataset, key, limit) {
   const inputTokens = extractTokens(input);
 
-  let bestItem = null;
-  let bestScore = 0;
+  const scored = [];
+
+  function calculateTokenScoreOnMatches(inputTokens, itemTokens) {
+    return inputTokens.filter(t => itemTokens.includes(t)).length;
+  }
 
   for (const item of dataset) {
+    if (!item || typeof item[key] !== "string") continue;
+
     const currentItemTokens = extractTokens(item[key]);
     const score = calculateTokenScoreOnMatches(inputTokens, currentItemTokens);
 
-    if (score > bestScore) {
-      bestScore = score;
-      bestItem = item;
-    }
+    scored.push({ item, score });
   }
 
-  if (bestScore === 0)
-    bestItem = lastResortMatch(input, dataset, key);
+  let candidates = scored.filter(entry => entry.score > 0).sort((a, b) => b.score - a.score);
 
-  if (bestItem === null) return null;
-
-  return {
-      name: bestItem[key],
-      price: bestItem.price ? Number(bestItem.price) : "Unknown",
-    };
+  return candidates.slice(0, limit).map(({ item }) => ({
+    name: item[key],
+    price: item.price ? Number(item.price) : "Unknown"
+  }));
 }
 
 function readCSV(filename) {
@@ -81,7 +61,7 @@ function readCSV(filename) {
   return results.data;
 }
 
-export function filterDataInJSON(build) {
+export function getTopMatchesForBuild(build, limit) {
   const cpuData = readCSV("cpu.csv");
   const gpuData = readCSV("video-card.csv");
   const ramData = readCSV("memory.csv");
@@ -90,11 +70,11 @@ export function filterDataInJSON(build) {
   const psuData = readCSV("power-supply.csv");
 
   return {
-    CPU: findBestMatch(build.CPU, cpuData),
-    GPU: findBestMatch(build.GPU, gpuData, "chipset"),
-    RAM: findBestMatch(build.RAM, ramData),
-    Storage: findBestMatch(build.Storage, storageData),
-    Motherboard: findBestMatch(build.Motherboard, motherboardData),
-    PSU: findBestMatch(build.PSU, psuData),
+    CPU: findTopMatches(build.CPU, cpuData, "name", limit),
+    GPU: findTopMatches(build.GPU, gpuData, "chipset", limit),
+    RAM: findTopMatches(build.RAM, ramData, "name", limit),
+    Storage: findTopMatches(build.Storage, storageData, "name", limit),
+    Motherboard: findTopMatches(build.Motherboard, motherboardData, "name", limit),
+    PSU: findTopMatches(build.PSU, psuData, "name", limit)
   };
 }
