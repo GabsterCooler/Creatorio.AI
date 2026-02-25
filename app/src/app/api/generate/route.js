@@ -171,7 +171,7 @@ export async function POST(req) {
     return makeErrorResponse(initialBuildResponse, 400);
   }
 
-  let initialBuildResponseJSON = null;
+  let initialBuildResponseJSON;
 
   try {
     initialBuildResponseJSON = JSON.parse(cleanAIResponse(initialBuildResponse));
