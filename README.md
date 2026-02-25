@@ -1,7 +1,7 @@
 # 🚀 Creatorio.AI
 
 Creatorio.AI is a **Next.js web application** that offers different creative AI applications. Right now, only PC Builder AI is available. 
-First, the algorithm asks an AI to give the best PC build based on a form filled by the user. Then, the algorithm checks in a dataset (The inventory) for the top-k most similar components to the ones suggested by the AI. Finally, the AI is asked again to create a PC build by picking between the top-k components. This project is inspired by the concept of RAG (Retrieval-Augmented Generation), but uses the idea of constrained generation.
+First, the algorithm asks an AI to give the best PC build based on a form filled by the user. Then, the algorithm checks in a dataset (The inventory) for the top-k most similar components to the ones suggested by the AI. Finally, the AI is asked again to create a PC build by picking between the top-k components. This project is inspired by the concept of RAG (Retrieval-Augmented Generation), but uses the idea of iterative constrained generation.
 
 Dataset source: [PC Part Dataset](https://github.com/docyx/pc-part-dataset/tree/main)
 
